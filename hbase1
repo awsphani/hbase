@@ -1,0 +1,109 @@
+hbase shell
+scan 'nyse:stock_data', {LIMIT => 10}
+each row will have a key and value,value contains attributes and respective values like json
+data is sorted and indexed on row key
+data is partitioned by row key column
+replication
+commit log
+CAP algorthim, consistency, accessibility, partition tolerance
+minor major compaction
+tombstones->soft del
+vacuum cleaning->hard del
+consistency level ->commit point
+
+
+CRUD
+DDL create table,alter table,describe,disable,enable,exists,get_table,show_filters table
+DML -insert/update/delete
+
+help
+namespace is like schema
+
+create_namespace 'training'
+list_namespace_tables 'training'
+
+#create table demo in namespace training with colfamily cf1
+create 'training:demo', 'cf1'
+
+#insert using put namespace:tablename row key colfam:colname colvalue
+
+put 'training:demo', 1, 'cf1:c1', 'v1'
+
+#read all the table
+scan 'training:demo'
+
+put 'training:demo', 1, 'cf1:c2', 'v2'
+put 'training:demo', 1, 'cf1:c3', 'v3'
+
+put 'training:demo', 4, 'cf1:x1', 'vx1'
+put 'training:demo', 2, 'cf1:y1', 'vy1'
+
+flexible schema, for each rec diff columns associated with row, colnames can be added dynamically
+
+update is actually insert with new version creating one more rec
+
+put 'training:demo', 1, 'cf1:c1', 'cv1'
+
+get 'training:demo',1,{COLUMN => 'cf1:c1',VERSIONS =>2}
+
+describe 'training:demo'    #-> we will see min_versions defined can change to see all versions
+
+CU(PUT) R(SCAN/GET) D
+
+delete 'training:demo', 1,'cf1:c1'
+
+
+thick schema -
+for a given rec can have 100's, 1000's cols
+
+thin schema-> will have few cols
+
+put 'training:endorsements', 'email@emai.com', 't:oracle', 'x,y,z,endorsee1'
+put 'training:endorsements', 'email@emai.com', 't:spark', 's1,s2,s3'
+
+disable 'training:endorsements'
+drop 'training:endorsements'
+
+
+#grouping data in to col fams
+
+create 'training:endorsements', 'raw', 'agg'
+
+put 'training:endorsements', 'email@emai.com', 'raw:oracle', 'x,y,z,endorser1'
+put 'training:endorsements', 'email@emai.com', 'agg:oracle', 4
+
+put 'training:endorsements', 'email@emai.com:oracle', 'raw:endorsers', 'x,y,z,endorsee1'
+
+scan 'nyse:stock_data', {LIMIT => 10}
+
+show_filters
+
+get 'nyse:stock_data', 'A,19991118'
+scan 'nyse:stock_data', {STARTROW =>'A,19991118', STOPROW =>'A,19991101', LIMIT =>10}
+scan 'nyse:stock_data', {STARTROW =>'A,19991118', STOPROW =>'A,19991101',COLUMNS =>['sd:lp','sd:hp'] ,LIMIT =>10}
+
+
+scan 'nyse:stock_data', {FILTER => "ColumnPrefixFilter('c')", LIMIT =>10}
+#get we need rowkey -> 'A,19991118' (here composite key of stockticker and date)
+get 'nyse:stock_data','A,19991118', {FILTER => "ColumnPrefixFilter('c')"}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
